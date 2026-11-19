@@ -1,0 +1,21 @@
+# Local secrets and environment configuration
+.env
+.env.*
+!.env.example
+
+# Local databases and generated Python files
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.py[cod]
+
+# Tool/build output
+.vercel/
+node_modules/
+dist/
+build/
+
+# Local work products
+/work/
+/outputs/
