@@ -84,8 +84,14 @@ class handler(BaseHTTPRequestHandler):
                 "email": email,
                 "password": password,
                 "email_confirm": True,
-                "app_metadata": {"role": role, "entity_id": match["id"]},
                 "user_metadata": {"name": name},
+            })
+            if not created.get("id"):
+                raise RuntimeError("Supabase no devolvió el identificador de la cuenta creada.")
+            # Assign trusted app metadata after Auth has inserted the user.
+            # The database trigger then creates the matching public profile.
+            _request(url + "/auth/v1/admin/users/" + quote(created["id"]), {**admin_headers, "Content-Type": "application/json"}, "PUT", {
+                "app_metadata": {"role": role, "entity_id": match["id"]},
             })
             return self.send_json(201, {"id": created.get("id"), "email": email})
         except RuntimeError as exc:

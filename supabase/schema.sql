@@ -246,6 +246,9 @@ begin
   v_role:=coalesce(new.raw_app_meta_data->>'role','');
   v_entity:=coalesce(new.raw_app_meta_data->>'entity_id','');
   v_name:=coalesce(new.raw_user_meta_data->>'name',split_part(new.email,'@',1));
+  -- Supabase Auth may insert the user before applying trusted app_metadata.
+  -- Leave the account without a profile until the Admin API assigns it below.
+  if v_role='' and v_entity='' then return new; end if;
   if v_role not in ('punto_salud','proveedor','eps','admin') or not exists(select 1 from public.organizations where id=v_entity) then
     raise exception 'A profile role and entity must be assigned by a trusted administrator';
   end if;
