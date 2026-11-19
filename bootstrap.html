@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142b40">
+  <title>Acceso inicial · CONEXIÓN SALUD</title>
+  <link rel="stylesheet" href="/bootstrap.css">
+  <script type="module" src="/bootstrap.js"></script>
+</head>
+<body>
+  <main class="panel">
+    <div class="brand"><span class="mark">+</span><span>CONEXIÓN SALUD</span></div>
+    <h1>Crear acceso administrador</h1>
+    <p>Usa este formulario una sola vez para habilitar la primera cuenta administrativa. El secreto de inicio se valida en el servidor y no se guarda en el navegador.</p>
+    <form id="bootstrapForm">
+      <label>Nombre completo<input name="name" autocomplete="name" required></label>
+      <label>Correo de administrador<input name="email" type="email" autocomplete="email" required></label>
+      <label>Contraseña inicial<input name="password" type="password" minlength="12" autocomplete="new-password" required></label>
+      <label>Secreto temporal de inicio<input name="secret" type="password" autocomplete="off" required></label>
+      <p id="feedback" role="status" aria-live="polite"></p>
+      <button type="submit">Crear acceso inicial</button>
+    </form>
+    <a href="/">Volver al inicio de sesión</a>
+  </main>
+</body>
+</html>

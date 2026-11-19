@@ -1,6 +1,6 @@
 # CONEXIÓN SALUD
 
-Demostrador académico de coordinación operativa entre Punto Salud, EPS y proveedores. Esta carpeta no contenía una aplicación previa, backend ni instrucciones de arquitectura; la solución usa Python 3.10+ (biblioteca estándar) y SQLite, sin dependencias npm ni credenciales externas.
+Demostrador académico de coordinación operativa entre Punto Salud, EPS y proveedores. El modo local usa Python 3.10+ y SQLite. El modo nube usa Supabase Auth, PostgreSQL, Storage y Realtime, con archivos estáticos y funciones Python en Vercel.
 
 ## Iniciar
 
@@ -52,12 +52,29 @@ Los datos sembrados incluyen stock normal, bajo y agotado; pedidos entregados, p
 
 ## Acceso y límites de seguridad
 
-La autorización de endpoints se valida en el servidor. Punto Salud crea pedidos y confirma recepción; proveedores administran sus existencias y actualizan pedidos de su entidad; EPS consulta y conversa; administración tiene acceso global. La cookie de sesión es HttpOnly y SameSite Strict y los cambios persistentes se guardan en SQLite.
+Punto Salud crea pedidos y confirma recepción; proveedores administran sus existencias y actualizan pedidos de su entidad; EPS consulta y conversa; administración tiene acceso global. En modo local, la sesión usa una cookie HttpOnly y los cambios se guardan en SQLite. En modo nube, Supabase Auth identifica al usuario y las políticas RLS controlan el acceso a filas y salas privadas.
 
-Es un prototipo académico local, no un servicio listo para publicar: las sesiones viven en memoria y expiran al reiniciar el proceso; no hay recuperación de contraseña, HTTPS, controles CSRF dedicados, auditoría inmutable, migraciones, copias de respaldo ni servicio multiinstancia. No expongas el puerto a Internet ni introduzcas información personal, clínica o financiera real. Antes de producción se requiere despliegue endurecido, gestión segura de secretos, expiración y revocación de sesiones, HTTPS y revisión de seguridad.
+El modo local es un prototipo académico: las sesiones viven en memoria y expiran al reiniciar el proceso. El modo nube usa proveedores gestionados para Auth, PostgreSQL y Realtime, pero sigue siendo una demostración con datos ficticios; no ingreses información personal, clínica o financiera real. Antes de un uso clínico o productivo se requiere revisión de seguridad, copias de respaldo y políticas de retención, recuperación de acceso, auditoría y análisis antimalware de adjuntos.
 
 El chat se ejecuta en el mismo proceso local y usa WebSocket nativo, sin sondeos ni proveedor externo. Al reconectar, la interfaz vuelve a conectarse y el historial se recupera de SQLite; los identificadores de cliente únicos evitan duplicar mensajes al reintentar. Archivos pequeños se guardan como datos adjuntos en la base local.
 
 Para ejecutar las pruebas automatizadas: `python -m unittest discover -s tests -v`. Incluyen permisos, pedidos, alertas, pagos, mensajes y una prueba de tres conexiones WebSocket simultáneas (Punto Salud, EPS y proveedor) en la sala común, con presencia, escritura, persistencia, referencia a pedido y deduplicación.
 
 Los datos son demostrativos. El alcance no integra EPS reales, correo, transportistas, facturación electrónica ni bancos; no hay credenciales para esos servicios. Para producción se requeriría una política de retención y análisis antimalware de archivos adjuntos, además del endurecimiento de sesiones y despliegue ya indicado.
+
+## Despliegue en Vercel y Supabase
+
+El proyecto Supabase debe tener aplicado `supabase/schema.sql` desde SQL Editor antes de que los perfiles puedan iniciar sesión. Ese esquema crea las tablas, datos ficticios, políticas RLS, funciones transaccionales y el bucket privado de adjuntos.
+
+En Vercel importa `anagomezbe-oss/conexion-salud` desde la rama `main`. Usa el preset **Other**, sin comando de build y con `.` como directorio de salida. Configura estas variables de entorno en Production y Preview:
+
+| Variable | Uso |
+|---|---|
+| `SUPABASE_URL` | URL del proyecto Supabase |
+| `SUPABASE_PUBLISHABLE_KEY` | Clave pública usada por el cliente web |
+| `SUPABASE_SECRET_KEY` | Clave secreta, solo funciones servidor para crear cuentas; nunca se expone al navegador |
+| `BOOTSTRAP_ADMIN_SECRET` | Secreto temporal para el primer administrador |
+
+Después del primer despliegue, abre `/bootstrap.html` para crear la primera cuenta administradora. Luego elimina `BOOTSTRAP_ADMIN_SECRET` de Vercel y usa **Gestión de usuarios** para crear las cuentas Punto Salud, EPS y proveedor. No subas contraseñas, claves ni archivos `.env` a GitHub.
+
+La rama pública de GitHub contiene únicamente código y datos ficticios; `conexion_salud.db` está excluida. Antes de usar información real, revisa privacidad, retención, copias de seguridad, autorización de cuentas, claves y el plan de Supabase/Vercel.
