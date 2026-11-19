@@ -9,6 +9,8 @@ export async function createSupabaseAdapter(url,key){
   const orgName=new Map();
 
   const profileFor=async()=>{
+    const {data:{session},error:sessionError}=await db.auth.getSession();fail(sessionError);
+    if(!session)return null;
     const {data:{user:authUser},error}=await db.auth.getUser();fail(error);
     if(!authUser)return null;
     const {data,error:pe}=await db.from('profiles').select('*').eq('id',authUser.id).single();fail(pe);
